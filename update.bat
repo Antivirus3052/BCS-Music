@@ -6,12 +6,6 @@ IF NOT EXIST ".git" (
     echo Initializing new Git repository...
     git init
     
-    REM Configure Git LFS
-    echo Setting up Git LFS...
-    git lfs install
-    git lfs track "*.exe"
-    git lfs track "*.dll"
-    
     REM Add remote
     git remote add origin https://github.com/Antivirus3052/BCS-Music.git
 ) ELSE (
@@ -27,6 +21,11 @@ IF NOT EXIST ".gitignore" (
     echo venv/>>.gitignore
 )
 
+REM Remove Git LFS tracking
+echo Removing Git LFS tracking...
+IF EXIST ".gitattributes" del .gitattributes
+git lfs uninstall
+
 REM Stage changes
 echo Staging changes...
 git add .
@@ -40,14 +39,11 @@ git commit -m "%commit_msg%"
 REM Push changes
 echo Pushing to GitHub...
 git branch -M main
-git push -u origin main
+git push -u origin main -f
 
 echo.
 if errorlevel 1 (
-    echo Note: If push failed due to LFS quota, try:
-    echo 1. Remove large files from Git LFS tracking
-    echo 2. Use regular Git for smaller files
-    echo 3. Consider upgrading GitHub LFS storage
+    echo Failed to push changes. Please check your Git configuration and try again.
 ) else (
     echo Repository successfully updated!
 )
