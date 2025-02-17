@@ -13,7 +13,7 @@ def ensure_chromium_installed():
         subprocess.run(["sudo", "apt-get", "install", "-y", "chromium-browser"], check=True)
     else:
         print("Chromium ist bereits installiert.")
-    return "/usr/bin/chromium-browser"
+    return chromium_path
 
 def save_cookies_to_file(cookies, filename):
     with open(filename, 'w') as f:
@@ -39,6 +39,8 @@ def main():
 
     # Chrome-Optionen
     options = webdriver.ChromeOptions()
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
     options.binary_location = binary_path
