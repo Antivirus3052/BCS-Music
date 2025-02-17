@@ -1,8 +1,19 @@
 import os
 import time
+import subprocess
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+
+def ensure_chromium_installed():
+    chromium_path = "/usr/bin/chromium-browser"
+    if not os.path.exists(chromium_path):
+        print("Chromium nicht gefunden. Es wird nun automatisch installiert (möglicherweise wird sudo-Passwort abgefragt).")
+        subprocess.run(["sudo", "apt-get", "update"], check=True)
+        subprocess.run(["sudo", "apt-get", "install", "-y", "chromium-browser"], check=True)
+    else:
+        print("Chromium ist bereits installiert.")
+    return "/usr/bin/chromium-browser"
 
 def save_cookies_to_file(cookies, filename):
     with open(filename, 'w') as f:
@@ -16,18 +27,22 @@ def save_cookies_to_file(cookies, filename):
             name = cookie.get('name', '')
             value = cookie.get('value', '')
             f.write(f"{domain}\t{flag}\t{path}\t{secure}\t{expiry}\t{name}\t{value}\n")
-    print(f"[INFO] Cookies saved to {filename}")
+    print(f"[INFO] Cookies gespeichert in {filename}")
 
 def main():
-    print("Starte Chrome-Browser, um YouTube-Cookies zu erfassen.")
+    # Stelle sicher, dass Chromium installiert ist und hole den Pfad
+    binary_path = ensure_chromium_installed()
+
+    print("Starte Chromium-Browser, um YouTube-Cookies zu erfassen.")
     print("Bitte melde dich in dem geöffneten Browser-Fenster bei YouTube an.")
     print("Sobald du angemeldet bist, kehre in dieses Terminal zurück und drücke Enter.")
-    
-    # Chrome-Optionen (Nicht headless, damit du den Login durchführen kannst)
+
+    # Chrome-Optionen
     options = webdriver.ChromeOptions()
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option('useAutomationExtension', False)
-    
+    options.add_experimental_option("useAutomationExtension", False)
+    options.binary_location = binary_path
+
     # Initialisiere den ChromeDriver (webdriver_manager lädt den passenden Treiber)
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
@@ -35,12 +50,12 @@ def main():
     driver.get("https://www.youtube.com")
     
     input("Drücke Enter, sobald du dich angemeldet hast...")
-    
+
     # Cookies auslesen
     cookies = driver.get_cookies()
     driver.quit()
     
-    # Speichere die Cookies in Netscape-Format
+    # Speichere die Cookies im Netscape-Format
     cookie_file = os.path.join(os.getcwd(), "youtube_cookies.txt")
     save_cookies_to_file(cookies, cookie_file)
     
