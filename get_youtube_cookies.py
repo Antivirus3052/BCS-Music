@@ -30,34 +30,29 @@ def save_cookies_to_file(cookies, filename):
     print(f"[INFO] Cookies gespeichert in {filename}")
 
 def main():
-    # Stelle sicher, dass Chromium installiert ist und hole den Pfad
     binary_path = ensure_chromium_installed()
 
     print("Starte Chromium-Browser, um YouTube-Cookies zu erfassen.")
     print("Bitte melde dich in dem geöffneten Browser-Fenster bei YouTube an.")
     print("Sobald du angemeldet bist, kehre in dieses Terminal zurück und drücke Enter.")
 
-    # Chrome-Optionen
     options = webdriver.ChromeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--remote-debugging-port=9222")
+    options.add_argument("--user-data-dir=/tmp/chromium")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
     options.binary_location = binary_path
 
-    # Initialisiere den ChromeDriver (webdriver_manager lädt den passenden Treiber)
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-    
-    # Öffne YouTube
     driver.get("https://www.youtube.com")
     
     input("Drücke Enter, sobald du dich angemeldet hast...")
 
-    # Cookies auslesen
     cookies = driver.get_cookies()
     driver.quit()
     
-    # Speichere die Cookies im Netscape-Format
     cookie_file = os.path.join(os.getcwd(), "youtube_cookies.txt")
     save_cookies_to_file(cookies, cookie_file)
     
