@@ -6,14 +6,26 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 
 def ensure_chromium_installed():
-    chromium_path = "/usr/bin/chromium-browser"
-    if not os.path.exists(chromium_path):
-        print("Chromium nicht gefunden. Es wird nun automatisch installiert (möglicherweise wird sudo-Passwort abgefragt).")
-        subprocess.run(["sudo", "apt-get", "update"], check=True)
-        subprocess.run(["sudo", "apt-get", "install", "-y", "chromium-browser"], check=True)
-    else:
-        print("Chromium ist bereits installiert.")
-    return chromium_path
+    # Prüfe zuerst, ob Chromium von Snap installiert ist
+    snap_path = "/snap/bin/chromium"
+    if os.path.exists(snap_path):
+        print("Chromium (Snap) ist installiert.")
+        return snap_path
+    # Falls nicht, versuche den klassischen Pfad
+    classic_path = "/usr/bin/chromium-browser"
+    if os.path.exists(classic_path):
+        print("Chromium (klassisch) ist installiert.")
+        return classic_path
+    # Andernfalls versuche, Chromium zu installieren
+    print("Chromium nicht gefunden. Es wird nun automatisch installiert (möglicherweise wird sudo-Passwort abgefragt).")
+    subprocess.run(["sudo", "apt-get", "update"], check=True)
+    subprocess.run(["sudo", "apt-get", "install", "-y", "chromium-browser"], check=True)
+    # Nach Installation erneut prüfen
+    if os.path.exists(snap_path):
+        return snap_path
+    if os.path.exists(classic_path):
+        return classic_path
+    raise Exception("Chromium konnte nicht gefunden werden.")
 
 def save_cookies_to_file(cookies, filename):
     with open(filename, 'w') as f:
