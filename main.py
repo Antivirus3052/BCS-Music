@@ -1,17 +1,21 @@
+import os
+import platform
 import discord
 from discord.ext import commands
 import yt_dlp
 import asyncio
 import json
 from discord.ui import Button, View, Select
-import os
 from dotenv import load_dotenv
 
 # Get the project root directory
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Update FFmpeg path to use project directory
-FFMPEG_PATH = os.path.join(PROJECT_ROOT, 'ffmpeg', 'bin', 'ffmpeg.exe')
+if platform.system() == "Windows":
+    FFMPEG_PATH = os.path.join(PROJECT_ROOT, 'ffmpeg', 'bin', 'ffmpeg.exe')
+else:
+    # Unter Linux nutzen wir in der Regel die systemweite FFmpeg-Installation
+    FFMPEG_PATH = '/usr/bin/ffmpeg'
 
 # Bot configuration
 intents = discord.Intents.default()
